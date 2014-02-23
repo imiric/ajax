@@ -4,7 +4,7 @@ var urlParser = require('urlparser');
 var DEFAULT_TIMEOUT = 5000;
 
 /* Get browser xhr object */
-var Xhr = (function() {  
+var Xhr = (function() {
     if(window.XDomainRequest) {
         return window.XDomainRequest;
     } else if(window.XMLHttpRequest) {
@@ -12,9 +12,9 @@ var Xhr = (function() {
     } else if(window.ActiveXObject) {
         ['Msxml2.XMLHTTP.6.0','Msxml2.XMLHTTP.3.0','Microsoft.XMLHTTP'].forEach(function(x) {
             try { return window.ActiveXObject(x) } catch (e) {}
-        }); 
+        });
         throw new Error('XHR ActiveXObject failed');
-    } 
+    }
     throw new Error('XHR support not found');
 }());
 
@@ -23,7 +23,7 @@ var XHR_CLOSED = 0,
     XHR_OPENED = 1,
     XHR_SENT = 2,
     XHR_RECEIVED = 3,
-    XHR_DONE = 4; 
+    XHR_DONE = 4;
 
 function Ajax(method,url,options,data,res) {
     var xhr = new Xhr(), headers;
@@ -50,17 +50,17 @@ function Ajax(method,url,options,data,res) {
             },
             progress: function(x){
                 clb(0,x);
-            } 
+            }
         }
     } else if(typeof res !== 'object') {
         res = {
-            resolve: function(x){ 
+            resolve: function(x){
                 this.result = x;
-                if(this.onfulfill) this.onfulfill(x); 
+                if(this.onfulfill) this.onfulfill(x);
             },
-            reject: function(x){ 
+            reject: function(x){
                 this.error = x;
-                if(this.onreject) this.onreject(x); 
+                if(this.onreject) this.onreject(x);
             },
             progress: function(x){
                 if(this.onprogress) this.onprogress(x);
@@ -76,21 +76,29 @@ function Ajax(method,url,options,data,res) {
     } /* else resolve using res */
 
     if(options.async === undefined) options.async = true;
- 
+
     if(options.timeout === undefined) options.timeout = DEFAULT_TIMEOUT;
-    
-    if(!options.headers) options.headers = {};
-    
-    if(options.type || !options.headers['content-type'])
+
+    /* If options.headers is defined but empty, assume no headers are wanted */
+    var headers = true;
+    if(typeof options.headers === 'undefined') {
+        options.headers = {};
+    } else {
+        if (Object.keys(options.headers).length == 0) {
+            headers = false;
+        }
+    }
+
+    if(headers && (options.type || !options.headers['content-type']))
         options.headers['content-type'] = options.type||'application/json';
 
-    if(options.accept || !options.headers.accept) 
+    if(headers && (options.accept || !options.headers.accept))
         options.headers.accept = options.accept||'application/json';
 
-    if(options.charset) options.headers['accept-charset'] = options.charset;
+    if(headers && options.charset) options.headers['accept-charset'] = options.charset;
 
     if("withCredentials" in xhr || typeof XDomainRequest != "undefined") {
-        
+
         if(options.withCredentials === true)
             xhr.withCredentials = true;
 
@@ -105,9 +113,9 @@ function Ajax(method,url,options,data,res) {
             switch(xhr.readyState) {
                 case XHR_DONE:
                     if(xhr.status) res.resolve(xhr);
-                    else res.reject(xhr); // status = 0 (timeout or Xdomain)           
+                    else res.reject(xhr); // status = 0 (timeout or Xdomain)
                     break;
-            }            
+            }
         }
     }
 
@@ -120,7 +128,7 @@ function Ajax(method,url,options,data,res) {
     });
 
     /* response timeout */
-    if(options.timeout) { 
+    if(options.timeout) {
         setTimeout(function(){
             xhr.abort();
         }, options.timeout);
@@ -136,7 +144,7 @@ function Ajax(method,url,options,data,res) {
 
     /* parse url */
     url = urlParser.parse(url);
-    
+
     if(!url.host) url.host = {};
 
     /* merge host info with options */
@@ -145,7 +153,7 @@ function Ajax(method,url,options,data,res) {
     if(!url.host.port && options.port) url.host.port = options.port;
 
     url = url.toString();
-    
+
     try {
         xhr.open(method,url,options.async);
     } catch(error){
@@ -196,7 +204,7 @@ function parseHeaders(h) {
             key = header.slice(0,i).replace(/^[\s]+|[\s]+$/g,'').toLowerCase();
             val = header.slice(i+1,header.length).replace(/^[\s]+|[\s]+$/g,'');
             if(key && key.length) ret[key] = val;
-        }   
+        }
     });
 
     return ret;
