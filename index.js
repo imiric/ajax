@@ -65,7 +65,7 @@ function Ajax(method,url,options,data,res) {
             progress: function(x){
                 if(this.onprogress) this.onprogress(x);
             },
-            when: function(f,r,p){
+            then: function(f,r,p){
                 this.onfulfill = f;
                 this.onreject = r;
                 this.onprogress = p;
