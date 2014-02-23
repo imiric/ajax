@@ -79,15 +79,23 @@ function Ajax(method,url,options,data,res) {
 
     if(options.timeout === undefined) options.timeout = DEFAULT_TIMEOUT;
 
-    if(!options.headers) options.headers = {};
+    /* If options.headers is defined but empty, assume no headers are wanted */
+    var headers = true;
+    if(typeof options.headers === 'undefined') {
+        options.headers = {};
+    } else {
+        if (Object.keys(options.headers).length == 0) {
+            headers = false;
+        }
+    }
 
-    if(options.type || !options.headers['content-type'])
+    if(headers && (options.type || !options.headers['content-type']))
         options.headers['content-type'] = options.type||'application/json';
 
-    if(options.accept || !options.headers.accept)
+    if(headers && (options.accept || !options.headers.accept))
         options.headers.accept = options.accept||'application/json';
 
-    if(options.charset) options.headers['accept-charset'] = options.charset;
+    if(headers && options.charset) options.headers['accept-charset'] = options.charset;
 
     if("withCredentials" in xhr || typeof XDomainRequest != "undefined") {
 
